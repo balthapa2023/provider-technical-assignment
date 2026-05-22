@@ -1,0 +1,36 @@
+﻿@model IEnumerable<ProviderAssignmentStarter.Models.Provider>
+@{
+    Layout = "_Layout";
+}
+
+<h2>Providers</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>County</th>
+            <th>Status</th>
+            <th>Active Licenses</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            var activeLicenses = p.Licenses?.Count(l => l.LicenseStatus == "Active" && (l.ExpirationDate == null || l.ExpirationDate > DateTime.UtcNow)) ?? 0;
+            <tr>
+                <td>@p.ProviderName</td>
+                <td>@p.County</td>
+                <td>@p.Status</td>
+                <td>@activeLicenses</td>
+                <td>
+                    <a class="btn btn-sm btn-primary" href="/Providers/Edit/@p.Id">Edit</a>
+                    <form method="post" asp-action="Delete" asp-route-id="@p.Id" style="display:inline">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Soft delete this provider?');">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
