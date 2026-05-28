@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.ComponentModel;
 using ProviderAssignmentStarter.Models;
 
 namespace ProviderAssignmentStarter.Data
@@ -16,20 +15,40 @@ namespace ProviderAssignmentStarter.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Global query filter to exclude soft-deleted providers
-            modelBuilder.Entity<Provider>().HasQueryFilter(p => !p.IsDeleted);
+            // -----------------------------
+            // GLOBAL QUERY FILTERS
+            // -----------------------------
+            modelBuilder.Entity<Provider>()
+                .HasQueryFilter(p => !p.IsDeleted);
 
+            modelBuilder.Entity<ProviderLicense>()
+                .HasQueryFilter(l => !l.IsDeleted);
+
+            // -----------------------------
+            // RELATIONSHIPS
+            // Provider 1 → Many Licenses
+            // -----------------------------
             modelBuilder.Entity<Provider>()
                 .HasMany(p => p.Licenses)
                 .WithOne(l => l.Provider)
                 .HasForeignKey(l => l.ProviderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // -----------------------------
+            // INDEXES
+            // -----------------------------
             modelBuilder.Entity<Provider>()
                 .HasIndex(p => p.ProviderName);
 
+            // -----------------------------
+            // DEFAULT VALUES
+            // -----------------------------
             modelBuilder.Entity<Provider>()
                 .Property(p => p.IsDeleted)
+                .HasDefaultValue(false);
+
+            modelBuilder.Entity<ProviderLicense>()
+                .Property(l => l.IsDeleted)
                 .HasDefaultValue(false);
         }
     }

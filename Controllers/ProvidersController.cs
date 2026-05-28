@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using ProviderAssignmentStarter.Data;
 using ProviderAssignmentStarter.Models;
 using ProviderAssignmentStarter.Services;
+
 namespace ProviderAssignmentStarter.Controllers
 {
     public class ProvidersController : Controller
@@ -16,12 +17,13 @@ namespace ProviderAssignmentStarter.Controllers
             _userContext = userContext;
         }
 
-        // GET: Providers
+        // GET: Providers (only non-deleted providers due to global filter)
         public async Task<IActionResult> Index()
         {
             var providers = await _db.Providers
                 .Include(p => p.Licenses)
                 .ToListAsync();
+
             return View(providers);
         }
 
@@ -33,13 +35,15 @@ namespace ProviderAssignmentStarter.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Provider model)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+                return View(model);
 
             model.CreatedAt = DateTime.UtcNow;
             model.CreatedBy = _userContext.GetCurrentUserName();
 
             _db.Providers.Add(model);
             await _db.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -47,7 +51,9 @@ namespace ProviderAssignmentStarter.Controllers
         public async Task<IActionResult> Edit(int id)
         {
             var provider = await _db.Providers.FindAsync(id);
-            if (provider == null) return NotFound();
+            if (provider == null)
+                return NotFound();
+
             return View(provider);
         }
 
@@ -56,11 +62,15 @@ namespace ProviderAssignmentStarter.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Provider model)
         {
-            if (id != model.Id) return BadRequest();
-            if (!ModelState.IsValid) return View(model);
+            if (id != model.Id)
+                return BadRequest();
+
+            if (!ModelState.IsValid)
+                return View(model);
 
             var provider = await _db.Providers.FindAsync(id);
-            if (provider == null) return NotFound();
+            if (provider == null)
+                return NotFound();
 
             provider.ProviderName = model.ProviderName;
             provider.County = model.County;
@@ -69,45 +79,64 @@ namespace ProviderAssignmentStarter.Controllers
             provider.UpdatedBy = _userContext.GetCurrentUserName();
 
             await _db.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
 
-        // POST: Providers/Delete/5 (soft delete)
+        // POST: Providers/Delete (soft delete)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             var provider = await _db.Providers
-                .IgnoreQueryFilters() // ensure we can find it even if previously deleted (defensive)
+                .IgnoreQueryFilters() // allow finding deleted providers
                 .FirstOrDefaultAsync(p => p.Id == id);
 
-            if (provider == null) return NotFound();
+            if (provider == null)
+                return NotFound();
 
-            if (provider.IsDeleted)
+            if (!provider.IsDeleted)
             {
-                // already deleted
-                return RedirectToAction(nameof(Index));
+                provider.IsDeleted = true;
+                provider.DeletedAt = DateTime.UtcNow;
+                provider.DeletedBy = _userContext.GetCurrentUserName();
+                provider.UpdatedAt = DateTime.UtcNow;
+                provider.UpdatedBy = _userContext.GetCurrentUserName();
+
+                await _db.SaveChangesAsync();
             }
 
-            provider.IsDeleted = true;
-            provider.DeletedAt = DateTime.UtcNow;
-            provider.DeletedBy = _userContext.GetCurrentUserName();
-            provider.UpdatedAt = DateTime.UtcNow;
-            provider.UpdatedBy = _userContext.GetCurrentUserName();
-
-            await _db.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Providers/Deleted
+        // GET: Providers/Deleted (audit view)
         public async Task<IActionResult> Deleted()
         {
-            var deleted = await _db.Providers
+            var deletedProviders = await _db.Providers
                 .IgnoreQueryFilters()
                 .Where(p => p.IsDeleted)
                 .Include(p => p.Licenses)
                 .ToListAsync();
-            return View(deleted);
+
+            return View(deletedProviders);
+        }
+
+        // BUSINESS SCENARIO: Active providers with active licenses
+        private IQueryable<Provider> ActiveProvidersWithActiveLicenses()
+        {
+            return _db.Providers
+                .Include(p => p.Licenses)
+                .Where(p => p.Status == "Active")
+                .Where(p => p.Licenses.Any(l =>
+                    l.LicenseStatus == "Active" &&
+                    (l.ExpirationDate == null || l.ExpirationDate > DateTime.UtcNow)
+                ));
+        }
+
+        public IActionResult ActiveWithActiveLicenses()
+        {
+            var data = ActiveProvidersWithActiveLicenses().ToList();
+            return View(data);
         }
     }
 }

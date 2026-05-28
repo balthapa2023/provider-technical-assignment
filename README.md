@@ -10,52 +10,78 @@ This is a starter project for the 24‑hour take‑home technical assignment.
 All application logic, database schema, and optional frontend enhancements
 are expected to be implemented by the candidate.
 
-Refer to the Assignment document for full requirements.
+Project Overview
+This project manages:
 
-Setup and run
-git clone <repo>
+Providers (organizations or individuals)
 
-cd <repo>
+Licenses associated with each provider
 
-dotnet restore
+Soft delete for both Providers and Licenses
 
-dotnet ef database update (or run provided scripts/create_schema.sql to create DB)
+Edit, Delete, Restore operations
 
-dotnet run
+Active vs Deleted license views
 
-Open https://localhost:5001 (or configured URL)
+The system uses Entity Framework Core, SQLite, and ASP.NET Core MVC.
+
+Architecture
+Layers
+Models → Data structures (Provider, ProviderLicense)
+
+Data → ApplicationDbContext (EF Core)
+
+Controllers → ProvidersController, LicensesController
+
+Views → Razor pages for CRUD operations
 
 Database
-File: App_Data/providers.db (or Data/providers.db)
+SQLite database
 
-Schema: show the Provider and License table definitions (copy the SQL DDL).
+EF Core migrations
 
-Why SQLite: lightweight, easy to include DB file in repo for evaluation.
+Soft delete implemented using global query filters
 
-Soft delete design
-Implementation: Provider has IsDeleted, DeletedAt, DeletedBy. EF Core global query filter excludes soft‑deleted providers from standard queries. Admin/audit queries use .IgnoreQueryFilters().
+Provider
+Represents a provider entity.
 
-Enforcement: All controller/service delete operations call a SoftDeleteProviderAsync method which sets IsDeleted = true and populates DeletedAt/DeletedBy. No code path performs Remove() on Provider.
+Key fields:
 
-Required scenarios mapping
-Active providers and active licenses: show sample LINQ and SQL queries.
+Id
 
-Providers active but licenses expired: show sample LINQ and SQL queries.
+ProviderName
 
-Exclusion of soft‑deleted providers: explain global filter and show example.
+County
 
-Assumptions and trade-offs
-Licenses are not soft‑deleted by default; can be extended if needed.
+Status
 
-IsDeleted boolean chosen for simplicity and compatibility with SQLite.
+IsDeleted (soft delete)
 
-CreatedBy/UpdatedBy/DeletedBy are strings; in production use a user id.
+Licenses (navigation property)
 
-What I would improve with more time
-Add unit/integration tests for soft‑delete behavior.
+ProviderLicense
+Represents a license belonging to a provider.
 
-Add API endpoints and a React dashboard (optional enhancement).
+Key fields:
 
-Add role-based admin UI for audit and restore operations.
+Id
 
-Add background job to flag expiring licenses and send notifications.
+ProviderId
+
+LicenseNumber
+
+LicenseStatus
+
+ExpirationDate
+
+IsDeleted (soft delete)
+
+DeletedAt
+
+ApplicationDbContext
+Key Features
+Configures Provider → Licenses relationship
+
+Enables soft delete using global query filters
+
+Ensures default values for IsDeleted

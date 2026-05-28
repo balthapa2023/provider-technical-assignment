@@ -29,6 +29,9 @@
                     <form method="post" asp-action="Delete" asp-route-id="@p.Id" style="display:inline">
                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Soft delete this provider?');">Delete</button>
                     </form>
+                    <a asp-controller="Licenses" asp-action="Index" asp-route-providerId="@p.Id">
+                        View Licenses
+                    </a>
                 </td>
             </tr>
         }
