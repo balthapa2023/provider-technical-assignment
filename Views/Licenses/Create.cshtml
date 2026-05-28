@@ -1,0 +1,38 @@
+﻿@model ProviderAssignmentStarter.Models.ProviderLicense
+
+<h2>Create License</h2>
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" asp-for="ProviderId" />
+
+    <div class="mb-3">
+        <label asp-for="LicenseNumber" class="form-label"></label>
+        <input asp-for="LicenseNumber" class="form-control" />
+        <span asp-validation-for="LicenseNumber" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="LicenseStatus" class="form-label"></label>
+        <select asp-for="LicenseStatus" class="form-control">
+            <option value="">-- Select Status --</option>
+            <option value="Active">Active</option>
+            <option value="Expired">Expired</option>
+            <option value="Suspended">Suspended</option>
+        </select>
+        <span asp-validation-for="LicenseStatus" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ExpirationDate" class="form-label"></label>
+        <input asp-for="ExpirationDate" type="date" class="form-control" />
+        <span asp-validation-for="ExpirationDate" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">Save</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

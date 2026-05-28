@@ -1,0 +1,28 @@
+﻿@model IEnumerable<ProviderAssignmentStarter.Models.Provider>
+@{
+    Layout = "_Layout";
+}
+
+<h2>Deleted Providers (Audit)</h2>
+
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>County</th>
+            <th>DeletedAt</th>
+            <th>DeletedBy</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.ProviderName</td>
+                <td>@p.County</td>
+                <td>@p.DeletedAt?.ToLocalTime().ToString("u")</td>
+                <td>@p.DeletedBy</td>
+            </tr>
+        }
+    </tbody>
+</table>

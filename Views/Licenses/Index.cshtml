@@ -1,0 +1,52 @@
+﻿@model ProviderAssignmentStarter.Models.Provider
+
+<h2>Licenses for @Model.ProviderName</h2>
+
+<a asp-action="Create"
+   asp-route-providerId="@Model.Id"
+   class="btn btn-primary mb-3">
+    Add License
+</a>
+<a asp-action="Deleted"
+   asp-route-providerId="@Model.Id"
+   class="btn btn-secondary mb-3">
+    View Deleted Licenses
+</a>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>License Number</th>
+            <th>Status</th>
+            <th>Expiration</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var license in Model.Licenses)
+        {
+            <tr>
+                <td>@license.LicenseNumber</td>
+                <td>@license.LicenseStatus</td>
+                <td>@(license.ExpirationDate?.ToShortDateString() ?? "N/A")</td>
+                <td>
+                    <a asp-action="Edit"
+                       asp-route-id="@license.Id"
+                       class="btn btn-sm btn-warning">
+                        Edit
+                    </a>
+
+                    <form asp-action="Delete"
+                          asp-route-id="@license.Id"
+                          method="post"
+                          style="display:inline">
+                        <button type="submit"
+                                class="btn btn-sm btn-danger"
+                                onclick="return confirm('Soft delete this license?');">
+                            Delete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

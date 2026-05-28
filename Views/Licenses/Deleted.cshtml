@@ -1,0 +1,43 @@
+﻿@model ProviderAssignmentStarter.Models.Provider
+
+<h2>Deleted Licenses for @Model.ProviderName</h2>
+
+<a asp-action="Index"
+   asp-route-providerId="@Model.Id"
+   class="btn btn-primary mb-3">
+    Back to Active Licenses
+</a>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>License Number</th>
+            <th>Status</th>
+            <th>Expiration</th>
+            <th>Deleted At</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var license in Model.Licenses)
+        {
+            <tr>
+                <td>@license.LicenseNumber</td>
+                <td>@license.LicenseStatus</td>
+                <td>@(license.ExpirationDate?.ToShortDateString() ?? "N/A")</td>
+                <td>@license.DeletedAt?.ToString("g")</td>
+                <td>
+                    <form asp-action="Restore"
+                          asp-route-id="@license.Id"
+                          method="post"
+                          style="display:inline">
+                        <button type="submit"
+                                class="btn btn-sm btn-success">
+                            Restore
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
