@@ -1,0 +1,100 @@
+@model Provider
+
+@{
+    ViewData["Title"] = "Restore Provider";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-success">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">@ViewData["Title"]</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info" role="alert">
+                        <i class="bi bi-info-circle"></i> 
+                        <strong>Restore Notice:</strong> This action will restore the provider to active status along with all related licenses.
+                    </div>
+
+                    <h5 class="card-title mb-3">Do you really want to restore this provider?</h5>
+
+                    <div class="card mb-4 bg-light">
+                        <div class="card-body">
+                            <dl class="row">
+                                <dt class="col-sm-4">Provider ID:</dt>
+                                <dd class="col-sm-8">
+                                    <strong>@Html.DisplayFor(model => model.ProviderId)</strong>
+                                </dd>
+
+                                <dt class="col-sm-4">Provider Name:</dt>
+                                <dd class="col-sm-8">
+                                    <strong>@Html.DisplayFor(model => model.ProviderName)</strong>
+                                </dd>
+
+                                <dt class="col-sm-4">County:</dt>
+                                <dd class="col-sm-8">@Html.DisplayFor(model => model.County)</dd>
+
+                                <dt class="col-sm-4">Status:</dt>
+                                <dd class="col-sm-8">@Html.DisplayFor(model => model.Status)</dd>
+
+                                <dt class="col-sm-4">Deleted Date:</dt>
+                                <dd class="col-sm-8">
+                                    @if (Model.DeletedAt.HasValue)
+                                    {
+                                        @Model.DeletedAt.Value.ToString("yyyy-MM-dd HH:mm:ss")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    @if (Model.Licenses.Any())
+                    {
+                        <div class="alert alert-info" role="alert">
+                            <i class="bi bi-info-circle"></i> 
+                            <strong>Related Licenses:</strong> This provider has @Model.Licenses.Count() license(s) which will also be restored.
+                        </div>
+
+                        <div class="table-responsive mb-4">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>License Number</th>
+                                        <th>Status</th>
+                                        <th>Expiration Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var license in Model.Licenses)
+                                    {
+                                        <tr>
+                                            <td>@license.LicenseNumber</td>
+                                            <td>@license.LicenseStatus</td>
+                                            <td>@license.ExpirationDate.ToString("yyyy-MM-dd")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+
+                    <div class="d-flex gap-2 justify-content-between">
+                        <form asp-action="Restore" asp-route-id="@Model.ProviderId" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Confirm Restore
+                            </button>
+                        </form>
+                        <a asp-action="Deleted" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Deleted List
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

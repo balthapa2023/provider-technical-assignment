@@ -1,8 +1,187 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!-- Hero Section -->
+<section class="hero-section mb-5">
+    <div class="container-fluid px-0">
+        <div class="hero-content">
+            <div class="row align-items-center">
+                <div class="col-lg-7 hero-text">
+                    <h1 class="hero-title">Child Care Provider Management System</h1>
+                    <p class="hero-subtitle">Quality child care licensing and provider operations management</p>
+                    <p class="hero-description">
+                        Manage child care providers, track licensing requirements, monitor compliance, and maintain comprehensive audit logs for transparent provider management.
+                    </p>
+                    <div class="cta-buttons mt-4">
+                        <a href="@Url.Action("Index", "Provider")" class="btn btn-primary btn-lg me-3">
+                            <i class="bi bi-list"></i> View Providers
+                        </a>
+                        <a href="@Url.Action("Create", "Provider")" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-plus-circle"></i> Add Provider
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-5 hero-visual d-none d-lg-flex">
+                    <div class="hero-icon">
+                        <i class="bi bi-heart-handshake"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Key Statistics Section -->
+<section class="stats-section mb-5">
+    <div class="container">
+        <h2 class="section-title text-center mb-5">Quick Overview</h2>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-primary">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <h3 class="stat-number">8</h3>
+                    <p class="stat-label">Active Providers</p>
+                    <small class="stat-meta">Licensed child care centers</small>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-success">
+                        <i class="bi bi-ticket"></i>
+                    </div>
+                    <h3 class="stat-number">14</h3>
+                    <p class="stat-label">Active Licenses</p>
+                    <small class="stat-meta">Currently valid licenses</small>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-warning">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                    <h3 class="stat-number">3</h3>
+                    <p class="stat-label">Licenses Expiring Soon</p>
+                    <small class="stat-meta">Within 30 days</small>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-danger">
+                        <i class="bi bi-exclamation-circle"></i>
+                    </div>
+                    <h3 class="stat-number">2</h3>
+                    <p class="stat-label">Expired Licenses</p>
+                    <small class="stat-meta">Requires attention</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section mb-5">
+    <div class="container">
+        <h2 class="section-title text-center mb-5">Key Features</h2>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <h4 class="feature-title">Compliance Dashboard</h4>
+                    <p class="feature-description">
+                        Monitor licensing status, compliance metrics, and provider performance with interactive dashboards and comprehensive analytics.
+                    </p>
+                    <a href="@Url.Action("Index", "DashboardView")" class="feature-link">
+                        View Dashboard <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-list"></i>
+                    </div>
+                    <h4 class="feature-title">Provider Management</h4>
+                    <p class="feature-description">
+                        Create, update, and manage child care provider information with full support for licensing details and compliance documentation.
+                    </p>
+                    <a href="@Url.Action("Index", "Provider")" class="feature-link">
+                        Manage Providers <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-file-text"></i>
+                    </div>
+                    <h4 class="feature-title">Audit Logging</h4>
+                    <p class="feature-description">
+                        Complete audit trail of all operations with timestamps and user information for transparency and regulatory compliance.
+                    </p>
+                    <a href="@Url.Action("Index", "AuditLog")" class="feature-link">
+                        View Audit Log <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h4 class="feature-title">License Tracking</h4>
+                    <p class="feature-description">
+                        Automatic license renewal reminders and compliance tracking to ensure all providers maintain valid, current licenses.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-search"></i>
+                    </div>
+                    <h4 class="feature-title">Search & Filter</h4>
+                    <p class="feature-description">
+                        Quickly find providers by name, county, status, or license ID with powerful filtering and advanced search capabilities.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-database"></i>
+                    </div>
+                    <h4 class="feature-title">Data Security</h4>
+                    <p class="feature-description">
+                        Secure database with soft-delete functionality and comprehensive audit trails for regulatory compliance and data integrity.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section mb-5">
+    <div class="container">
+        <div class="cta-card">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h3 class="cta-title">Ready to Get Started?</h3>
+                    <p class="cta-description">
+                        Start managing your child care provider licenses efficiently with our comprehensive management system.
+                    </p>
+                </div>
+                <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                    <a href="@Url.Action("Index", "Provider")" class="btn btn-primary btn-lg">
+                        Go to Providers
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
