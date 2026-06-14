@@ -1,0 +1,91 @@
+@model Provider
+
+@{
+    ViewData["Title"] = "Delete Provider";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">@ViewData["Title"]</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i> 
+                        <strong>Soft Delete Notice:</strong> This action will mark the provider as deleted but retain all records for audit purposes.
+                    </div>
+
+                    <h5 class="card-title mb-3">Do you really want to delete this provider?</h5>
+
+                    <div class="card mb-4 bg-light">
+                        <div class="card-body">
+                            <dl class="row">
+                                <dt class="col-sm-4">Provider ID:</dt>
+                                <dd class="col-sm-8">
+                                    <strong>@Html.DisplayFor(model => model.ProviderId)</strong>
+                                </dd>
+
+                                <dt class="col-sm-4">Provider Name:</dt>
+                                <dd class="col-sm-8">
+                                    <strong>@Html.DisplayFor(model => model.ProviderName)</strong>
+                                </dd>
+
+                                <dt class="col-sm-4">County:</dt>
+                                <dd class="col-sm-8">@Html.DisplayFor(model => model.County)</dd>
+
+                                <dt class="col-sm-4">Status:</dt>
+                                <dd class="col-sm-8">@Html.DisplayFor(model => model.Status)</dd>
+
+                                <dt class="col-sm-4">Created Date:</dt>
+                                <dd class="col-sm-8">@Html.DisplayFor(model => model.CreatedDate)</dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    @if (Model.Licenses.Any())
+                    {
+                        <div class="alert alert-info" role="alert">
+                            <i class="bi bi-info-circle"></i> 
+                            <strong>Related Licenses:</strong> This provider has @Model.Licenses.Count() license(s) which will also be marked as deleted.
+                        </div>
+
+                        <div class="table-responsive mb-4">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>License Number</th>
+                                        <th>Status</th>
+                                        <th>Expiration Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var license in Model.Licenses)
+                                    {
+                                        <tr>
+                                            <td>@license.LicenseNumber</td>
+                                            <td>@license.LicenseStatus</td>
+                                            <td>@license.ExpirationDate.ToString("yyyy-MM-dd")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+
+                    <div class="d-flex gap-2 justify-content-between">
+                        <form asp-action="Delete" asp-route-id="@Model.ProviderId" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-check-circle"></i> Confirm Delete
+                            </button>
+                        </form>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to List
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,83 @@
+@model IEnumerable<Provider>
+
+@{
+    ViewData["Title"] = "Providers";
+}
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>@ViewData["Title"]</h1>
+        <div class="btn-group" role="group">
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Add New Provider
+            </a>
+            <a asp-action="Deleted" class="btn btn-warning">
+                <i class="bi bi-archive"></i> View Soft Deleted Providers
+            </a>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Provider Name</th>
+                    <th>County</th>
+                    <th>Status</th>
+                    <th>Created Date</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Count() == 0)
+                {
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            No providers found. <a asp-action="Create">Create one now</a>.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@Html.DisplayFor(modelItem => item.ProviderName)</strong>
+                            </td>
+                            <td>@Html.DisplayFor(modelItem => item.County)</td>
+                            <td>
+                                @if (item.Status == "Active")
+                                {
+                                    <span class="badge bg-success">@item.Status</span>
+                                }
+                                else if (item.Status == "Inactive")
+                                {
+                                    <span class="badge bg-secondary">@item.Status</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning">@item.Status</span>
+                                }
+                            </td>
+                            <td>@Html.DisplayFor(modelItem => item.CreatedDate)</td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <a asp-action="Details" asp-route-id="@item.ProviderId" class="btn btn-sm btn-info" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@item.ProviderId" class="btn btn-sm btn-warning" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@item.ProviderId" class="btn btn-sm btn-danger" title="Soft Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

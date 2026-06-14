@@ -1,0 +1,94 @@
+@model Provider
+
+@{
+    ViewData["Title"] = "Edit Provider";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">@ViewData["Title"]</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post" novalidate>
+                        <input type="hidden" asp-for="ProviderId" />
+                        <input type="hidden" asp-for="CreatedDate" />
+                        <input type="hidden" asp-for="IsDeleted" />
+                        <input type="hidden" asp-for="DeletedAt" />
+
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger" role="alert">
+                                <h4 class="alert-heading">Validation Errors</h4>
+                                <ul>
+                                    @foreach (var modelState in ViewData.ModelState.Values)
+                                    {
+                                        @foreach (var error in modelState.Errors)
+                                        {
+                                            <li>@error.ErrorMessage</li>
+                                        }
+                                    }
+                                </ul>
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <label class="form-label">Provider ID</label>
+                            <input type="text" class="form-control" value="@Model.ProviderId" disabled />
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ProviderName" class="form-label">Provider Name</label>
+                            <input asp-for="ProviderName" class="form-control" required />
+                            <span asp-validation-for="ProviderName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="County" class="form-label">County</label>
+                            <select asp-for="County" class="form-select" required>
+                                <option value="">-- Select County --</option>
+                                @foreach (var county in (List<string>)ViewData["Counties"] ?? new List<string>())
+                                {
+                                    <option value="@county" selected="@(county == Model.County ? "selected" : "")">@county</option>
+                                }
+                            </select>
+                            <span asp-validation-for="County" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Status" class="form-label">Status</label>
+                            <select asp-for="Status" class="form-select" required>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                                <option value="Pending">Pending</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Created Date</label>
+                            <input type="text" class="form-control" value="@Model.CreatedDate.ToString("G")" disabled />
+                        </div>
+
+                        <div class="d-flex gap-2 justify-content-between">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-check-circle"></i> Update Provider
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to List
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

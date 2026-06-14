@@ -1,0 +1,147 @@
+@model IEnumerable<AuditLog>
+@using System.Text.Json;
+@using System.Text.RegularExpressions;
+
+@{
+    ViewData["Title"] = "Audit Log";
+
+    Func<string, string> RenderValues = (string jsonString) =>
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(jsonString);
+            var sb = new System.Text.StringBuilder();
+            foreach (var prop in doc.RootElement.EnumerateObject())
+            {
+                var name = FormatPropertyName(prop.Name);
+                var value = prop.Value.ValueKind == JsonValueKind.String 
+                    ? prop.Value.GetString() 
+                    : prop.Value.ToString();
+
+                sb.Append($"<small><strong>{name}:</strong> <code>{System.Web.HttpUtility.HtmlEncode(value)}</code></small><br/>");
+            }
+            return sb.ToString();
+        }
+        catch
+        {
+            return "Unable to parse values";
+        }
+    };
+
+    string FormatPropertyName(string name)
+    {
+        var result = Regex.Replace(name, "([a-z])([A-Z])", "$1 $2");
+        return System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(result);
+    }
+}
+
+<div class="container-fluid mt-5">
+    <div class="mb-4">
+        <h1><i class="bi bi-file-text"></i> @ViewData["Title"]</h1>
+        <p class="text-muted">Complete audit trail - all records added, edited, or deleted</p>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">No audit records found.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Entity</th>
+                        <th>ID</th>
+                        <th>Action</th>
+                        <th>User</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var log in Model.OrderByDescending(a => a.Timestamp))
+                    {
+                        <tr>
+                            <td><small>@log.Timestamp.ToString("MM/dd/yyyy HH:mm:ss")</small></td>
+                            <td><span class="badge bg-info">@log.EntityType</span></td>
+                            <td><code>@log.EntityId</code></td>
+                            <td>
+                                @if (log.Action == "Create")
+                                {
+                                    <span class="badge bg-success"><i class="bi bi-plus-circle"></i> Create</span>
+                                }
+                                else if (log.Action == "Edit")
+                                {
+                                    <span class="badge bg-warning text-dark"><i class="bi bi-pencil"></i> Edit</span>
+                                }
+                                else if (log.Action == "Restore")
+                                {
+                                    <span class="badge bg-warning text-dark"><i class="bi bi-arrow-counterclockwise"></i> Restore</span>
+                                }
+                                else if (log.Action == "Delete")
+                                {
+                                    <span class="badge bg-danger"><i class="bi bi-trash"></i> Delete</span>
+                                }
+                            </td>
+                            <td><small>@(string.IsNullOrEmpty(log.UserId) ? "System" : log.UserId)</small></td>
+                            <td>
+                                @if (log.Action == "Create" && !string.IsNullOrEmpty(log.NewValues))
+                                {
+                                    <div class="alert alert-success py-2 px-3 mb-0">
+                                        <strong>Record Created:</strong><br/>
+                                        @Html.Raw(RenderValues(log.NewValues))
+                                    </div>
+                                }
+                                else if (log.Action == "Edit")
+                                {
+                                    <div class="row g-1">
+                                        @if (!string.IsNullOrEmpty(log.OldValues))
+                                        {
+                                            <div class="col-md-6">
+                                                <div class="alert alert-danger py-2 px-3 mb-0">
+                                                    <strong>Old Values:</strong><br/>
+                                                    @Html.Raw(RenderValues(log.OldValues))
+                                                </div>
+                                            </div>
+                                        }
+                                        @if (!string.IsNullOrEmpty(log.NewValues))
+                                        {
+                                            <div class="col-md-6">
+                                                <div class="alert alert-success py-2 px-3 mb-0">
+                                                    <strong>New Values:</strong><br/>
+                                                    @Html.Raw(RenderValues(log.NewValues))
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                else if (log.Action == "Delete" && !string.IsNullOrEmpty(log.OldValues))
+                                {
+                                    <div class="alert alert-danger py-2 px-3 mb-0">
+                                        <strong>Deleted Record:</strong><br/>
+                                        @Html.Raw(RenderValues(log.OldValues))
+                                    </div>
+                                }
+                                
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <div class="mt-4 p-3 bg-light rounded border">
+        <h6><i class="bi bi-info-circle"></i> Legend:</h6>
+        <p class="mb-1"><span class="badge bg-success"><i class="bi bi-plus-circle"></i> Create</span> - New record added</p>
+        <p class="mb-1"><span class="badge bg-warning text-dark"><i class="bi bi-pencil"></i> Edit</span> - Record updated</p>
+        <p class="mb-0"><span class="badge bg-danger"><i class="bi bi-trash"></i> Delete</span> - Record soft-deleted (kept for audit)</p>
+ 
+        <p class="mb-0">
+            <span class="btn btn-sm btn-success">
+            <i class="bi bi-arrow-counterclockwise"></i> Restore
+            </span> - Restore Provider
+        </p>
+    </div>
+</div>
