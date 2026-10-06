@@ -237,11 +237,38 @@ public class ProvidersController : Controller
             return NotFound();
         }
 
+        if (!providerExists)
+        {
+            return NotFound();
+        }
+
+        // A license must have a meaningful expiration date.
+        // DateTime.MinValue can occur when no valid date is supplied.
+        if (license.ExpirationDate == default)
+        {
+            ModelState.AddModelError(
+                nameof(License.ExpirationDate),
+                "Expiration date is required.");
+        }
+
+        // Prevent duplicate license numbers for the same provider.
+        // The database also enforces this with a unique index.
+        var duplicateLicenseExists = await _context.Licenses
+            .AnyAsync(l =>
+                l.ProviderId == license.ProviderId &&
+                l.LicenseNumber == license.LicenseNumber);
+
+        if (duplicateLicenseExists)
+        {
+            ModelState.AddModelError(
+                nameof(License.LicenseNumber),
+                "This license number already exists for this provider.");
+        }
+
         if (!ModelState.IsValid)
         {
             return View(license);
         }
-
         // Add the license to the database.
         _context.Licenses.Add(license);
 
