@@ -1,0 +1,68 @@
+@model IEnumerable<ProviderAssignmentStarter.Models.Provider>
+
+@{
+    ViewData["Title"] = "Providers";
+}
+
+<h1>Providers</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Create New Provider</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>County</th>
+            <th>Status</th>
+            <th>Licenses</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var provider in Model)
+        {
+            <tr>
+                <td>@provider.Name</td>
+                <td>@provider.County</td>
+                <td>@provider.Status</td>
+
+                <td>
+                    @if (provider.Licenses.Any())
+                    {
+                        @foreach (var license in provider.Licenses)
+                        {
+                            <div>
+                                @license.LicenseNumber
+                                -
+                                @license.Status
+                                -
+                                Expires: @license.ExpirationDate.ToShortDateString()
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <span>No licenses</span>
+                    }
+                </td>
+
+                <td>
+                    <a asp-action="Edit"
+                       asp-route-id="@provider.ProviderId">
+                        Edit
+                    </a>
+
+                    |
+
+                    <a asp-action="Delete"
+                       asp-route-id="@provider.ProviderId">
+                        Delete
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
