@@ -173,4 +173,83 @@ public class ProvidersController : Controller
 
         return RedirectToAction(nameof(Index));
     }
+    // GET: /Providers/Details/1
+    // Displays one provider and all licenses that belong to that provider.
+    [HttpGet]
+    public async Task<IActionResult> Details(int? id)
+    {
+        // We need a ProviderId to know which provider to display.
+        if (id == null)
+        {
+            return NotFound();
+        }
+
+        // Load the provider and its related licenses.
+        var provider = await _context.Providers
+            .Include(p => p.Licenses)
+            .FirstOrDefaultAsync(p => p.ProviderId == id);
+
+        if (provider == null)
+        {
+            return NotFound();
+        }
+
+        return View(provider);
+    }
+    // GET: /Providers/CreateLicense/4
+    // Displays a form for adding a license to a specific provider.
+    [HttpGet]
+    public async Task<IActionResult> CreateLicense(int id)
+    {
+        // Make sure the provider exists.
+        var provider = await _context.Providers.FindAsync(id);
+
+        if (provider == null)
+        {
+            return NotFound();
+        }
+
+        // Create a new License and automatically associate
+        // it with the selected provider.
+        var license = new License
+        {
+            ProviderId = provider.ProviderId,
+            Status = "Active"
+        };
+
+        return View(license);
+    }
+
+
+    // POST: /Providers/CreateLicense
+    // Saves the new license to the database.
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateLicense(
+        [Bind("ProviderId,LicenseNumber,Status,ExpirationDate")] License license)
+    {
+        // Make sure the provider still exists.
+        var providerExists = await _context.Providers
+            .AnyAsync(p => p.ProviderId == license.ProviderId);
+
+        if (!providerExists)
+        {
+            return NotFound();
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(license);
+        }
+
+        // Add the license to the database.
+        _context.Licenses.Add(license);
+
+        await _context.SaveChangesAsync();
+
+        // Return to the provider's Details page.
+        return RedirectToAction(
+            nameof(Details),
+            new { id = license.ProviderId });
+    }
 }

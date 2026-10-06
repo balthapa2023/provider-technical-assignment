@@ -15,8 +15,10 @@ public class License
     public string Status { get; set; } = "Active";
 
     [Required]
+    [DataType(DataType.Date)]
     public DateTime ExpirationDate { get; set; }
 
-    public Provider Provider { get; set; } = null!;
+
+    public Provider? Provider { get; set; } = null!;
 
 }

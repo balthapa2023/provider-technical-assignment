@@ -33,7 +33,7 @@ public class AppDbContext : DbContext
 
         // A provider cannot have the same license number twice.
         modelBuilder.Entity<License>()
-            .HasQueryFilter(l => !l.Provider.IsDeleted);
+    .HasQueryFilter(l => l.Provider != null && !l.Provider.IsDeleted);
         modelBuilder.Entity<License>()
             .HasIndex(l => new { l.ProviderId, l.LicenseNumber })
             .IsUnique();

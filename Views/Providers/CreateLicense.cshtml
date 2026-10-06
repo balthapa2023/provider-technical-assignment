@@ -1,0 +1,65 @@
+@model ProviderAssignmentStarter.Models.License
+
+@{
+    ViewData["Title"] = "Create License";
+}
+
+<h1>Create License</h1>
+
+<form asp-action="CreateLicense" method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <!-- ProviderId is hidden because the license must belong
+         to the provider selected on the Details page. -->
+    <input type="hidden" asp-for="ProviderId" />
+
+    <div class="mb-3">
+        <label asp-for="LicenseNumber" class="form-label">
+            License Number
+        </label>
+
+        <input asp-for="LicenseNumber"
+               class="form-control" />
+
+        <span asp-validation-for="LicenseNumber"
+              class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Status" class="form-label">
+            License Status
+        </label>
+
+        <select asp-for="Status" class="form-select">
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+        </select>
+
+        <span asp-validation-for="Status"
+              class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ExpirationDate" class="form-label">
+            Expiration Date
+        </label>
+
+        <input asp-for="ExpirationDate"
+               type="date"
+               class="form-control" />
+
+        <span asp-validation-for="ExpirationDate"
+              class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Create License
+    </button>
+
+    <a asp-action="Details"
+       asp-route-id="@Model.ProviderId"
+       class="btn btn-secondary">
+        Cancel
+    </a>
+
+</form>
