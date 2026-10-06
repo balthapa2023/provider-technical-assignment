@@ -1,0 +1,48 @@
+@model ProviderAssignmentStarter.Models.Provider
+
+@{
+    ViewData["Title"] = "Delete Provider";
+}
+
+<h1>Delete Provider</h1>
+
+<div class="alert alert-warning">
+    Are you sure you want to delete this provider?
+</div>
+
+<dl class="row">
+    <dt class="col-sm-2">
+        Name
+    </dt>
+    <dd class="col-sm-10">
+        @Model.Name
+    </dd>
+
+    <dt class="col-sm-2">
+        County
+    </dt>
+    <dd class="col-sm-10">
+        @Model.County
+    </dd>
+
+    <dt class="col-sm-2">
+        Status
+    </dt>
+    <dd class="col-sm-10">
+        @Model.Status
+    </dd>
+</dl>
+
+<form asp-action="Delete" method="post">
+
+    <input type="hidden" asp-for="ProviderId" />
+
+    <button type="submit" class="btn btn-danger">
+        Delete
+    </button>
+
+    <a asp-action="Index" class="btn btn-secondary">
+        Cancel
+    </a>
+
+</form>

@@ -1,0 +1,93 @@
+@model ProviderAssignmentStarter.Models.Provider
+
+@{
+    ViewData["Title"] = "Provider Details";
+}
+
+<h1>Provider Details</h1>
+
+<div class="mb-4">
+    <h4>@Model.Name</h4>
+
+    <dl class="row">
+        <dt class="col-sm-2">
+            County
+        </dt>
+        <dd class="col-sm-10">
+            @Model.County
+        </dd>
+
+        <dt class="col-sm-2">
+            Provider Status
+        </dt>
+        <dd class="col-sm-10">
+            @Model.Status
+        </dd>
+    </dl>
+</div>
+
+<h3>Licenses</h3>
+<p>
+    <a asp-action="CreateLicense"
+       asp-route-id="@Model.ProviderId"
+       class="btn btn-success">
+        Add License
+    </a>
+</p>
+@if (!Model.Licenses.Any())
+{
+    <p>This provider does not have any licenses.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>License Number</th>
+                <th>Status</th>
+                <th>Expiration Date</th>
+                <th>Expiration</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var license in Model.Licenses)
+            {
+                <tr>
+                    <td>@license.LicenseNumber</td>
+
+                    <td>@license.Status</td>
+
+                    <td>
+                        @license.ExpirationDate.ToShortDateString()
+                    </td>
+
+                    <td>
+                        @if (license.ExpirationDate.Date < DateTime.Today)
+                        {
+                            <span>Expired</span>
+                        }
+                        else
+                        {
+                            <span>Not Expired</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<p>
+
+    <a asp-action="Edit"
+       asp-route-id="@Model.ProviderId"
+       class="btn btn-primary">
+        Edit Provider
+    </a>
+
+    <a asp-action="Index"
+       class="btn btn-secondary">
+        Back to Providers
+    </a>
+</p>
