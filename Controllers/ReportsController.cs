@@ -5,7 +5,6 @@ using ProviderAssignmentStarter.Models;
 
 namespace ProviderAssignmentStarter.Controllers;
 
-/// <summary>Required data scenarios (8.6) and optional dashboard (10).</summary>
 [ApiController]
 [Route("api/reports")]
 public class ReportsController : ControllerBase
@@ -15,18 +14,12 @@ public class ReportsController : ControllerBase
 
     private static DateOnly Today => DateOnly.FromDateTime(DateTime.UtcNow);
 
-    // Scenario 1: Active providers and their ACTIVE (unexpired) licenses
     [HttpGet("active-providers-active-licenses")]
     public Task<List<ProviderLicenseScenarioDto>> ActiveWithActive() =>
         ScenarioQuery(expired: false);
-
-    // Scenario 2: Providers that appear Active but hold EXPIRED licenses
     [HttpGet("active-providers-expired-licenses")]
     public Task<List<ProviderLicenseScenarioDto>> ActiveWithExpired() =>
         ScenarioQuery(expired: true);
-
-    // Scenario 3 is demonstrated by every standard endpoint: the global filter
-    // excludes soft-deleted providers. /api/providers/audit/deleted proves they still exist.
 
     private Task<List<ProviderLicenseScenarioDto>> ScenarioQuery(bool expired)
     {
@@ -41,7 +34,6 @@ public class ReportsController : ControllerBase
             .ToListAsync();
     }
 
-    // Optional dashboard – all aggregation done server-side.
     [HttpGet("dashboard")]
     public async Task<ActionResult<DashboardDto>> Dashboard()
     {

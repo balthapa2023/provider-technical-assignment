@@ -13,6 +13,5 @@ public class License
 
     public Provider Provider { get; set; } = null!;
 
-    /// <summary>Validity is driven by ExpirationDate only — never by provider status.</summary>
     public bool IsExpired(DateOnly today) => ExpirationDate < today;
 }

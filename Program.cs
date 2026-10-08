@@ -16,7 +16,6 @@ builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
 
 var app = builder.Build();
 
-// Create schema, apply SQL views, seed scenario data (idempotent).
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -30,7 +29,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors();
-app.UseDefaultFiles();   // serves built React app from wwwroot if present
+app.UseDefaultFiles();
 app.UseStaticFiles();
 app.MapControllers();
 app.MapFallbackToFile("index.html");

@@ -2,7 +2,6 @@
 
 namespace ProviderAssignmentStarter.Models;
 
-// ---------- Provider ----------
 public record ProviderUpsertDto(
     [Required, StringLength(200, MinimumLength = 2)] string ProviderName,
     [Required, StringLength(100)] string County,
@@ -19,7 +18,6 @@ public record ProviderDetailDto(
     bool IsDeleted, DateTime? DeletedDate, string? DeletedBy,
     IEnumerable<LicenseDto> Licenses);
 
-// ---------- License ----------
 public record LicenseUpsertDto(
     [Required, StringLength(50)] string LicenseNumber,
     [Required, EnumDataType(typeof(LicenseStatus))] string LicenseStatus,
@@ -29,7 +27,6 @@ public record LicenseDto(
     int LicenseId, int ProviderId, string LicenseNumber, string LicenseStatus,
     DateOnly ExpirationDate, bool IsExpired, int DaysUntilExpiration);
 
-// ---------- Reports ----------
 public record ProviderLicenseScenarioDto(
     int ProviderId, string ProviderName, string County, string ProviderStatus,
     int LicenseId, string LicenseNumber, string LicenseStatus, DateOnly ExpirationDate, bool IsExpired);

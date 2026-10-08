@@ -24,9 +24,7 @@ public class AppDbContext : DbContext
             e.HasIndex(p => p.IsDeleted);
             e.HasIndex(p => new { p.ProviderName, p.County });
 
-            // *** SOFT-DELETE ENFORCEMENT ***
-            // Every LINQ query against Providers excludes deleted rows unless
-            // the caller explicitly opts out with IgnoreQueryFilters() (audit only).
+            e.HasQueryFilter(p => !p.IsDeleted);
             e.HasQueryFilter(p => !p.IsDeleted);
         });
 
@@ -41,18 +39,22 @@ public class AppDbContext : DbContext
             e.HasOne(l => l.Provider)
              .WithMany(p => p.Licenses)
              .HasForeignKey(l => l.ProviderId)
-             .OnDelete(DeleteBehavior.Restrict); // no cascading hard deletes, ever
+             .OnDelete(DeleteBehavior.Restrict);
 
-            // Licenses follow their provider's deleted state.
             e.HasQueryFilter(l => !l.Provider.IsDeleted);
         });
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken ct = default)
     {
-        // Safety net: convert any attempted hard delete of a soft-deletable
-        // entity into a soft delete. The controllers never call Remove(), but
-        // this guarantees the organizational rule even if someone does later.
+        foreach (var entry in ChangeTracker.Entries<ISoftDeletable>()
+                     .Where(e => e.State == EntityState.Deleted))
+        {
+            entry.State = EntityState.Modified;
+            entry.Entity.IsDeleted = true;
+            entry.Entity.DeletedDate = DateTime.UtcNow;
+            entry.Entity.DeletedBy ??= "system";
+        }
         foreach (var entry in ChangeTracker.Entries<ISoftDeletable>()
                      .Where(e => e.State == EntityState.Deleted))
         {

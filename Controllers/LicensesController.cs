@@ -14,7 +14,6 @@ public class LicensesController : ControllerBase
 
     private static DateOnly Today => DateOnly.FromDateTime(DateTime.UtcNow);
 
-    // GET /api/providers/5/licenses
     [HttpGet]
     public async Task<ActionResult<IEnumerable<LicenseDto>>> List(int providerId)
     {
@@ -29,7 +28,6 @@ public class LicensesController : ControllerBase
         return Ok(list.Select(l => ToDto(l, today)));
     }
 
-    // POST /api/providers/5/licenses
     [HttpPost]
     public async Task<ActionResult<LicenseDto>> Create(int providerId, LicenseUpsertDto dto)
     {
@@ -53,7 +51,6 @@ public class LicensesController : ControllerBase
         return CreatedAtAction(nameof(List), new { providerId }, ToDto(l, Today));
     }
 
-    // PUT /api/providers/5/licenses/12
     [HttpPut("{licenseId:int}")]
     public async Task<ActionResult<LicenseDto>> Update(int providerId, int licenseId, LicenseUpsertDto dto)
     {

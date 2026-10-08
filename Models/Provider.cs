@@ -11,11 +11,9 @@ public class Provider : ISoftDeletable
     public string County { get; set; } = string.Empty;
     public ProviderStatus Status { get; set; } = ProviderStatus.Pending;
 
-    // Audit
     public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     public DateTime? ModifiedDate { get; set; }
 
-    // Soft delete
     public bool IsDeleted { get; set; }
     public DateTime? DeletedDate { get; set; }
     public string? DeletedBy { get; set; }

@@ -3,10 +3,6 @@ using ProviderAssignmentStarter.Models;
 
 namespace ProviderAssignmentStarter.Data;
 
-/// <summary>
-/// Creates the schema, applies SQL views, and seeds data that demonstrates
-/// every required scenario. Safe to run repeatedly.
-/// </summary>
 public static class DbSeeder
 {
     public static async Task InitializeAsync(AppDbContext db, string contentRoot)

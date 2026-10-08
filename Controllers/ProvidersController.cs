@@ -14,8 +14,6 @@ public class ProvidersController : ControllerBase
 
     private static DateOnly Today => DateOnly.FromDateTime(DateTime.UtcNow);
 
-    // GET /api/providers?status=Active&county=Fulton&search=sun
-    // Soft-deleted providers are excluded automatically by the global query filter.
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProviderDto>>> List(
         [FromQuery] string? status, [FromQuery] string? county, [FromQuery] string? search)
@@ -44,7 +42,6 @@ public class ProvidersController : ControllerBase
         return Ok(result);
     }
 
-    // GET /api/providers/5  (provider + its licenses)
     [HttpGet("{id:int}")]
     public async Task<ActionResult<ProviderDetailDto>> Get(int id)
     {
@@ -55,13 +52,10 @@ public class ProvidersController : ControllerBase
         return p is null ? NotFound() : Ok(ToDetail(p));
     }
 
-    // POST /api/providers
     [HttpPost]
     public async Task<ActionResult<ProviderDetailDto>> Create(ProviderUpsertDto dto)
     {
         var status = Enum.Parse<ProviderStatus>(dto.Status, true);
-
-        // Business rule: no duplicate active provider name within the same county.
         if (await _db.Providers.AnyAsync(p => p.ProviderName == dto.ProviderName.Trim() && p.County == dto.County.Trim()))
             return Conflict(Problem($"A provider named '{dto.ProviderName}' already exists in {dto.County}."));
 
@@ -72,12 +66,11 @@ public class ProvidersController : ControllerBase
         return CreatedAtAction(nameof(Get), new { id = p.ProviderId }, ToDetail(p));
     }
 
-    // PUT /api/providers/5
     [HttpPut("{id:int}")]
     public async Task<ActionResult<ProviderDetailDto>> Update(int id, ProviderUpsertDto dto)
     {
         var p = await _db.Providers.Include(x => x.Licenses).FirstOrDefaultAsync(x => x.ProviderId == id);
-        if (p is null) return NotFound(); // includes soft-deleted — they can't be edited
+        if (p is null) return NotFound();
 
         if (await _db.Providers.AnyAsync(x => x.ProviderId != id && x.ProviderName == dto.ProviderName.Trim() && x.County == dto.County.Trim()))
             return Conflict(Problem($"A provider named '{dto.ProviderName}' already exists in {dto.County}."));
@@ -90,7 +83,6 @@ public class ProvidersController : ControllerBase
         return Ok(ToDetail(p));
     }
 
-    // DELETE /api/providers/5  -> SOFT DELETE ONLY
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> SoftDelete(int id)
     {
@@ -99,15 +91,12 @@ public class ProvidersController : ControllerBase
 
         p.IsDeleted = true;
         p.DeletedDate = DateTime.UtcNow;
-        p.DeletedBy = User.Identity?.Name ?? "api-user"; // no auth in scope; placeholder for audit
+        p.DeletedBy = User.Identity?.Name ?? "api-user";
         await _db.SaveChangesAsync();
 
         return NoContent();
     }
 
-    // ---------- AUDIT / TROUBLESHOOTING (explicitly opts out of the filter) ----------
-
-    // GET /api/providers/audit/deleted
     [HttpGet("audit/deleted")]
     public async Task<ActionResult<IEnumerable<ProviderDetailDto>>> Deleted()
     {
@@ -119,7 +108,6 @@ public class ProvidersController : ControllerBase
         return Ok(list.Select(ToDetail));
     }
 
-    // POST /api/providers/5/restore
     [HttpPost("{id:int}/restore")]
     public async Task<ActionResult<ProviderDetailDto>> Restore(int id)
     {
@@ -132,7 +120,6 @@ public class ProvidersController : ControllerBase
         return Ok(ToDetail(p));
     }
 
-    // ---------- helpers ----------
     private static ProviderDetailDto ToDetail(Provider p) => new(
         p.ProviderId, p.ProviderName, p.County, p.Status.ToString(),
         p.CreatedDate, p.ModifiedDate, p.IsDeleted, p.DeletedDate, p.DeletedBy,
