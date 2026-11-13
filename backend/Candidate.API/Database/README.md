@@ -1,28 +1,9 @@
-# SQLite database workspace
+# SQLite database
 
-This directory is for SQLite-related deliverables for the take-home assignment.
+The API stores its local database at `Data/providers.db`. The checked-in database is seeded with examples for active, expired, suspended, inactive, and soft-deleted provider/license scenarios.
 
-## Layout
+## Schema and setup
 
-| Folder | What to put here |
-| --- | --- |
-| `Scripts/` | SQL scripts |
-| `Data/` | The SQLite database file |
+Entity Framework Core defines the `Providers` and `Licenses` tables and creates them on API startup with `EnsureCreated`. A new database is seeded when it has no providers. Both providers and licenses use `IsDeleted` and `DeletedAtUtc`; global query filters keep deleted records and licenses belonging to deleted providers out of standard results. License rows retain their provider foreign key after either record is soft-deleted.
 
-`.gitkeep` keeps each folder in source control while it is empty. You can remove a `.gitkeep` file after that folder contains your files.
-
-## Your design
-
-You are responsible for the database schema, relationships, soft-delete implementation, and database queries. Choose the SQLite database file name and the schema yourself.
-
-SQL scripts and database artifacts should support the requirements in the official assignment: [Take-Home Technical Assignment](../../../assignment/Take-Home_Technical_Assignment_Formatted.pdf).
-
-## Submission
-
-The final submission must include the SQLite `.db` file and any applicable SQL scripts.
-
-Commit the database file after database connections are closed, or commit a consistent backup or snapshot. Git ignores transient SQLite files (`*.db-wal`, `*.db-shm`, `*.db-journal`, and the matching `*.sqlite-*` files). Those files are not submission artifacts.
-
-## Documentation
-
-Document database setup and design decisions in the root `README.md`.
+No standalone SQL scripts are used: the EF Core model is the schema definition. The root [README](../../../README.md) documents the model and local run instructions. `EnsureCreated` is suitable for this exercise but does not apply schema upgrades; use versioned EF Core migrations for ongoing production changes.

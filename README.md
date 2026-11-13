@@ -1,214 +1,108 @@
-# Candidate Assessment
+# Provider Registry
 
-Blank full-stack starter for the Senior Full-Stack .NET Modernization Developer take-home assignment. The React UI and the ASP.NET Core API are separate projects in one Visual Studio solution. No assignment behavior is implemented.
+A small provider and license registry built with ASP.NET Core Web API, Entity Framework Core, SQLite, React, and Vite. Provider and license records are loaded from the API; the frontend contains no business sample data.
 
-## Assignment overview
+## Requirements
 
-The assignment is the first phase of the technical interview. It asks you to design and build a small system that manages providers and their licenses, including soft deletion, and to connect a React UI to a C# API and a SQLite database.
+- .NET 8 SDK
+- Node.js and npm
 
-The starter is intentionally empty:
+## Run locally
 
-- The React application renders a blank page.
-- The API is an ASP.NET Core Web API shell with controller support and no business endpoints.
-- No database, Entity Framework Core model, authentication, dashboard, or business rules are included.
+Start the API from the repository root:
 
-You own the design. The official assignment is the requirements source.
+```powershell
+dotnet restore CandidateAssessment.sln
+dotnet run --no-launch-profile --urls http://localhost:5000 --project backend\Candidate.API
+```
 
-[Take-Home Technical Assignment](assignment/Take-Home_Technical_Assignment_Formatted.pdf)
+In another terminal, start the React app:
 
-## Technology stack
-
-Supplied in this starter:
-
-| Layer | Technology |
-| --- | --- |
-| UI | React 19.3.0 and React DOM 19.3.0 (JavaScript) |
-| UI tooling | Vite 8.3.4 and `@vitejs/plugin-react` 6.1.2 |
-| API | ASP.NET Core Web API, C#, `net8.0` |
-| IDE | Visual Studio 2022 solution (`CandidateAssessment.sln`) |
-
-Declared in `frontend/React.UI/package.json` as `react` `^19.2.8`, `react-dom` `^19.2.8`, `vite` `^8.3.0`, and `@vitejs/plugin-react` `^6.1.1`. The versions above are the ones installed from `package-lock.json`.
-
-Required by the assignment and left for you to add:
-
-- ASP.NET Core Web API on .NET 8 or .NET 10
-- Entity Framework Core with the SQLite provider
-- SQLite
-
-This starter targets `net8.0`. The assignment also allows .NET 10. You may retarget the API if you choose that option. Document the choice.
-
-## Prerequisites
-
-- [Node.js](https://nodejs.org/) LTS and npm
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) or a newer SDK that can build `net8.0` (the .NET 8 targeting pack must be installed)
-- Git
-- One of:
-  - Visual Studio 2022 (17.7 or later) with the **ASP.NET and web development** workload and the **Node.js development** workload
-  - Visual Studio Code or Cursor
-
-## Visual Studio 2022 setup
-
-1. Open `CandidateAssessment.sln`.
-2. Confirm Solution Explorer shows:
-   - `frontend` / `React.UI`
-   - `backend` / `Candidate.API`
-3. In a terminal, install frontend dependencies:
-
-   ```bash
-   cd frontend/React.UI
-   npm ci
-   ```
-
-4. Run both projects together:
-   - Right-click the solution and choose **Configure Startup Projects**.
-   - Select **Multiple startup projects**.
-   - Set **React.UI** and **Candidate.API** to **Start**.
-   - Start debugging.
-
-`React.UI` starts with `npm run dev`. `Candidate.API` starts with the profile selected in Visual Studio. The Development environment serves the OpenAPI document through Swagger UI. That document contains no business operations.
-
-The UI does not call the API. Each project prints its own address when it starts.
-
-## VS Code and Cursor setup
-
-Open the repository folder. Use two terminals.
-
-Frontend:
-
-```bash
-cd frontend/React.UI
+```powershell
+cd frontend\React.UI
 npm ci
 npm run dev
 ```
 
-API:
+Open the address printed by Vite (normally `http://localhost:5173`). Vite forwards `/api` requests to `http://localhost:5000`; keep the API on that address while using the development server. Swagger is available at `http://localhost:5000/swagger` in the Development environment.
 
-```bash
-dotnet run --project backend/Candidate.API
+Build the solution/API with `dotnet build CandidateAssessment.sln`. Build the React production bundle separately with `npm run build` from `frontend\React.UI`.
+
+## Data model and database
+
+The SQLite database is [providers.db](backend/Candidate.API/Database/Data/providers.db). Entity Framework Core creates the schema on API startup and stores the file in `backend/Candidate.API/Database/Data/`. The provider table includes a GUID key, name, county, lifecycle status, creation/update timestamps, and soft-delete fields. Each license has a required provider foreign key, license number, editable status, expiration date, creation/update timestamps, and soft-delete fields. A case-insensitive partial unique index prevents duplicate active license numbers per provider while allowing a deleted number to be reissued. Provider deletion does not cascade to licenses.
+
+The API uses global EF query filters to exclude deleted providers and licenses from normal queries. Deletion sets `IsDeleted`, `DeletedAtUtc`, and `UpdatedAtUtc`; it never removes a provider, license, or provider/license association. The `GET /api/providers/deleted` and nested deleted-license endpoints intentionally bypass those filters for audit and maintenance queries. They are included for this assignment and should be protected by authorization in a deployed system.
+
+The database is seeded only when it contains no providers. Its examples demonstrate an active provider with a valid active license, an active provider with an expired license, an inactive provider with a valid license, a suspended license, and a soft-deleted provider whose data remains available through the audit endpoint. License validity is calculated from `ExpirationDate` using the current UTC date; a suspended license remains suspended even when its expiration date has passed. Provider status and license validity are evaluated separately.
+
+`EnsureCreated` is used to make the sample database easy to run without a migration step. It does not update an existing schema; a production system should replace it with versioned EF Core migrations. The schema is defined in the EF model, so no standalone SQL scripts are currently required. See [Database/README.md](backend/Candidate.API/Database/README.md) for the database artifact location.
+
+## API
+
+| Method | Route | Description |
+| --- | --- | --- |
+| `GET` | `/api/providers` | List non-deleted providers |
+| `GET` | `/api/dashboard` | Read-only registry-wide provider and license insights |
+| `GET` | `/api/providers?search=Fulton` | Search provider names and counties |
+| `GET` | `/api/providers?scenario=active-with-active-licenses` | Active providers with at least one currently active license |
+| `GET` | `/api/providers?scenario=active-with-expired-licenses` | Active providers with at least one expired license |
+| `GET` | `/api/providers/{id}` | Provider detail and associated licenses |
+| `GET` | `/api/providers/deleted` | Soft-deleted providers for audit |
+| `POST` | `/api/providers` | Create a provider |
+| `PUT` | `/api/providers/{id}` | Update a provider |
+| `DELETE` | `/api/providers/{id}` | Soft-delete a provider |
+| `GET` | `/api/providers/{providerId}/licenses` | List a provider's active license records |
+| `GET` | `/api/providers/{providerId}/licenses/deleted` | List the provider's soft-deleted licenses for audit |
+| `POST` | `/api/providers/{providerId}/licenses` | Add a license linked to the provider |
+| `PUT` | `/api/providers/{providerId}/licenses/{licenseId}` | Edit a linked license |
+| `DELETE` | `/api/providers/{providerId}/licenses/{licenseId}` | Soft-delete a linked license |
+
+Provider status must be `Active`, `Inactive`, or `Pending`. API validation enforces required names and counties, field lengths, and allowed statuses. A license's effective status is returned as `Active`, `Expired`, or `Suspended`; expiration is derived by the API rather than inferred from provider status.
+
+## React workflows
+
+The directory loads providers from `GET /api/providers`, supports name/county search and the two license scenarios, and provides create, edit, and confirmed soft-delete workflows. Selecting a provider loads its license details from the API; the detail panel supports adding, editing, and confirmed soft deletion of licenses linked to that provider. Loading, empty, validation, and request-error states are shown in the UI. The Vite development proxy keeps browser requests on `/api`; a deployment should route that path to the API or configure an equivalent same-origin reverse proxy.
+
+## Assumptions and trade-offs
+
+- Providers can have multiple licenses. A license's provider is assigned by the nested API route and cannot be changed through the license edit request.
+- License stored status is `Active` or `Suspended`; `Expired` is a derived status based on the expiration date.
+- License numbers are unique per provider among non-deleted licenses. A deleted number can be reused; the deleted record remains available in the audit endpoint.
+- The sample audit endpoint is unauthenticated to keep the local exercise easy to inspect. Production access must be restricted.
+- There is no pagination or concurrency token because the included dataset and workflows are intentionally small.
+- The database file is included as a deliverable. The API seeds a new/empty database; it will not overwrite existing data.
+
+## Further improvements
+
+With more time, I would add EF Core migrations, broader API and UI automated tests, authentication and role-based audit access, pagination, and operational logging/health checks.
+
+## Read-only provider and license dashboard
+
+Choose **Dashboard** in the navigation, or open `http://localhost:5173/#dashboard`. The existing **Directory** remains available for management; the dashboard has no create, edit, or delete actions. Refresh reloads current backend data. Loading, empty, and request-error states are explicit, with a retry action after failures.
+
+### Why these metrics
+
+- **Summary cards** show the total providers, total licenses, expired licenses, and distinct providers needing renewal, giving a quick registry-wide overview independent of directory filters.
+- **Providers by status** shows the Active/Inactive/Pending lifecycle mix to highlight onboarding and operational workload.
+- **License health** separates Active, Expired, and Suspended licenses. Suspended licenses are not mislabeled as active or expired, so all licenses reconcile to the total.
+- **Licenses per provider** highlights license workload and providers with no licenses. All current providers appear, ordered by license count descending; long charts scroll rather than silently dropping providers.
+- **Providers with expiring licenses** identifies actionable renewal risks, showing each provider's count and nearest expiration date, ordered by earliest expiration.
+
+### Frontend/backend integration and business rules
+
+React requests `GET /api/dashboard` through the shared API helper and existing Vite `/api` proxy. A dedicated C# controller calls `IDashboardService`, registered with dependency injection. The service reads SQLite through EF Core with `AsNoTracking` and the existing soft-delete query filters, excluding deleted providers and deleted licenses. It returns a dedicated response DTO containing counts, status distributions, per-provider license totals, renewal candidates, the UTC evaluation date, and the renewal window length. The dashboard uses lightweight CSS bar charts with visible labels and numeric counts, avoiding another chart dependency. React only renders API metrics and scales the bars; it does not decide validity, filter renewal candidates, or aggregate business counts.
+
+The backend captures one UTC date per request using `TimeProvider` and reuses `ProviderResponseMapper.GetEffectiveLicenseStatus`. A license expiring today remains active; expiration dates before today are expired unless the stored status is Suspended. The renewal window includes today through 30 days ahead, inclusive, and includes only effectively Active licenses. Provider lifecycle status is independent: even Inactive/Pending providers can have licenses needing renewal. Cards count distinct affected providers, while the renewal table also shows their affected license counts. Date-only fields are returned as `YYYY-MM-DD` and displayed without browser timezone conversion.
+
+No database schema changes or new sample records are required. The endpoint reads existing persisted data; the dashboard reloads when opened or refreshed. As with the directory, production hosting should route `/api` to the C# backend through a same-origin reverse proxy.
+
+### Validation
+
+Run the focused SQLite-backed tests from the repository root:
+
+```powershell
+dotnet test backend\Candidate.API.Tests\Candidate.API.Tests.csproj
 ```
 
-Use the addresses printed by Vite and by `dotnet run`. No proxy or shared base URL is configured.
-
-## Running the blank React frontend
-
-From `frontend/React.UI`:
-
-| Command | Purpose |
-| --- | --- |
-| `npm ci` | Install the locked dependencies |
-| `npm run dev` | Start the Vite development server |
-| `npm run build` | Create the production build in `dist/` |
-| `npm run preview` | Preview the production build |
-
-`src/App.jsx` returns `null`, so the running app is a blank page. Application entry is `src/main.jsx`.
-
-## Running the blank ASP.NET Core API
-
-From the repository root:
-
-```bash
-dotnet restore
-dotnet build CandidateAssessment.sln
-dotnet run --project backend/Candidate.API
-```
-
-`Program.cs` registers controllers and maps controller endpoints. There are no controllers, routes, models, or database services. A browser request to the site root returns 404 until you add endpoints. In Development, Swagger UI confirms the host started.
-
-## Candidate responsibilities
-
-Implement the system described in the assignment PDF. This repository does not prescribe endpoint names or a database schema.
-
-You are responsible for:
-
-- Designing the SQLite schema and adding Entity Framework Core
-- Implementing provider and license behavior, including soft deletion
-- Exposing that behavior through the ASP.NET Core Web API
-- Building the React workflows and loading application data from the API
-- Keeping business rules in the API, not only in the UI
-- Adding any sample data or repeatable setup the assignment requires
-- Documenting design decisions, assumptions, and trade-offs
-
-Optional dashboard work, if you choose to do it, is described only in the assignment PDF.
-
-## GitHub branching and submission
-
-Starter repository: <https://github.com/balthapa2023/provider-technical-assignment>
-
-1. Fork the repository.
-2. Clone your fork.
-3. Add the original repository as `upstream`:
-
-   ```bash
-   git remote add upstream https://github.com/balthapa2023/provider-technical-assignment.git
-   ```
-
-4. Create a branch from `main`. `your-assignment-copy` is an example name:
-
-   ```bash
-   git checkout -b your-assignment-copy
-   ```
-
-5. Do all work on that branch. Do not commit assignment changes directly to `main`.
-6. Commit and push the branch to your fork:
-
-   ```bash
-   git push origin your-assignment-copy
-   ```
-
-7. Open a pull request from your branch to `main` on the original repository.
-
-You may submit a link to your fork, or a link to the branch or pull request that contains the work. A ZIP file is not required.
-
-## Required documentation
-
-Keep this starter guide accurate if you change how the projects run. Your submission README must also explain:
-
-- How to run the API and the React application locally
-- Database design decisions
-- How soft deletion is implemented
-- How the React UI communicates with the C# API
-- Assumptions and trade-offs
-- What you would improve with more time
-
-Include the SQLite database file and any SQL scripts you use to create or modify tables, views, or queries.
-
-## Verification steps
-
-From a clean checkout, with Node.js and the .NET SDK on `PATH`:
-
-```bash
-dotnet restore
-dotnet build CandidateAssessment.sln
-cd frontend/React.UI
-npm ci
-npm run build
-```
-
-Then confirm both applications start:
-
-```bash
-dotnet run --project backend/Candidate.API
-```
-
-```bash
-cd frontend/React.UI
-npm run dev
-```
-
-Expected results:
-
-- The solution build succeeds for `Candidate.API` and `React.UI`.
-- The API process stays running and reports no startup exception. Swagger UI in Development lists no business operations.
-- The React development server stays running and the page is blank.
-- Solution Explorer shows both projects.
-
-## Project layout
-
-```text
-CandidateAssessment.sln
-frontend/React.UI/          React + Vite application
-backend/Candidate.API/      ASP.NET Core Web API (net8.0)
-assignment/                 Official assignment PDF
-README.md
-.gitignore
-```
+These cover today/30-day/31-day expiration boundaries, suspended licenses, independent provider statuses, zero-license providers, soft-deleted licenses/providers, no tracking, and an empty registry. Build React with `npm run build` from `frontend\React.UI`. [Dashboard.http](backend/Candidate.API/Dashboard.http) provides a manual API request; the endpoint is also listed in development Swagger.
