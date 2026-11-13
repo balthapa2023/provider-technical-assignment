@@ -49,6 +49,10 @@ export function getProvider(id, signal) {
   return request(`/providers/${id}`, { signal })
 }
 
+export function getDashboard(signal) {
+  return request('/dashboard', { signal })
+}
+
 export function createProvider(provider) {
   return request('/providers', {
     method: 'POST',

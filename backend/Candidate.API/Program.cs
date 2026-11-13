@@ -1,4 +1,5 @@
 using Candidate.API.Data;
+using Candidate.API.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,6 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddProblemDetails();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 var databaseDirectory = Path.Combine(
     builder.Environment.ContentRootPath,
@@ -32,6 +36,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseExceptionHandler();
 app.UseAuthorization();
 app.MapControllers();
 

@@ -10,6 +10,7 @@ import {
   updateProvider,
 } from './api.js'
 import './App.css'
+import Dashboard from './Dashboard.jsx'
 
 const emptyProvider = {
   name: '',
@@ -40,6 +41,34 @@ const scenarios = [
 ]
 
 function App() {
+  const [view, setView] = useState(() => window.location.hash)
+
+  useEffect(() => {
+    function updateView() {
+      setView(window.location.hash)
+    }
+    window.addEventListener('hashchange', updateView)
+    return () => window.removeEventListener('hashchange', updateView)
+  }, [])
+
+  return (
+    <main className="app-shell">
+      <header className="topbar">
+        <a className="brand" href="#providers" aria-label="Provider Registry home">
+          <span className="brand-mark" aria-hidden="true">P</span>
+          <span>Provider Registry</span>
+        </a>
+        <nav className="registry-nav" aria-label="Main navigation">
+          <a href="#providers" aria-current={view !== '#dashboard' ? 'page' : undefined}>Directory</a>
+          <a href="#dashboard" aria-current={view === '#dashboard' ? 'page' : undefined}>Dashboard</a>
+        </nav>
+      </header>
+      {view === '#dashboard' ? <Dashboard /> : <ProviderDirectory />}
+    </main>
+  )
+}
+
+function ProviderDirectory() {
   const [providers, setProviders] = useState([])
   const [selectedProvider, setSelectedProvider] = useState(null)
   const [selectedProviderId, setSelectedProviderId] = useState(null)
@@ -255,15 +284,7 @@ function App() {
   }
 
   return (
-    <main className="app-shell">
-      <header className="topbar">
-        <a className="brand" href="/" aria-label="Provider Registry home">
-          <span className="brand-mark" aria-hidden="true">P</span>
-          <span>Provider Registry</span>
-        </a>
-        <span className="topbar-caption">Operations workspace</span>
-      </header>
-
+    <>
       <section className="page-heading">
         <div>
           <p className="eyebrow">DIRECTORY</p>
@@ -445,7 +466,7 @@ function App() {
           onConfirm={confirmDeleteLicense}
         />
       )}
-    </main>
+    </>
   )
 }
 

@@ -79,6 +79,139 @@ button:disabled {
   font-weight: 600;
 }
 
+.registry-nav {
+  display: flex;
+  gap: 16px;
+}
+
+.registry-nav a {
+  padding: 8px 0;
+  color: #53636b;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.registry-nav a[aria-current='page'] {
+  color: var(--teal);
+  border-bottom: 2px solid var(--teal);
+  font-weight: 700;
+}
+
+.dashboard-content {
+  width: min(1190px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.dashboard-summary,
+.dashboard-charts {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.dashboard-summary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.dashboard-charts {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+}
+
+.dashboard-panel {
+  min-width: 0;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+}
+
+.dashboard-panel h2 {
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+
+.dashboard-caption {
+  color: #53636b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.chart-bars {
+  display: grid;
+  gap: 16px;
+  max-height: 340px;
+  overflow-y: auto;
+  margin: 20px 0 0;
+  padding: 0 8px 0 0;
+  list-style: none;
+}
+
+.chart-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 7px;
+  font-size: 12px;
+}
+
+.chart-label span {
+  overflow-wrap: anywhere;
+}
+
+.chart-track {
+  height: 12px;
+  overflow: hidden;
+  background: #edf1f2;
+  border-radius: 4px;
+}
+
+.chart-fill {
+  height: 100%;
+  background: var(--teal);
+}
+
+.dashboard-table-scroll {
+  overflow-x: auto;
+}
+
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 12px;
+}
+
+.dashboard-table th,
+.dashboard-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+@media (max-width: 850px) {
+  .dashboard-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-charts {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 500px) {
+  .topbar {
+    padding: 0 16px;
+  }
+
+  .registry-nav {
+    gap: 10px;
+  }
+
+  .dashboard-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
 .page-heading,
 .summary-grid,
 .workspace {

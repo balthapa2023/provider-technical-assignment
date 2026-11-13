@@ -1,0 +1,5 @@
+@baseUrl = http://localhost:5000
+
+### Read-only registry insights (all non-deleted providers and licenses)
+GET {{baseUrl}}/api/dashboard
+Accept: application/json

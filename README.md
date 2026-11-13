@@ -43,6 +43,7 @@ The database is seeded only when it contains no providers. Its examples demonstr
 | Method | Route | Description |
 | --- | --- | --- |
 | `GET` | `/api/providers` | List non-deleted providers |
+| `GET` | `/api/dashboard` | Read-only registry-wide provider and license insights |
 | `GET` | `/api/providers?search=Fulton` | Search provider names and counties |
 | `GET` | `/api/providers?scenario=active-with-active-licenses` | Active providers with at least one currently active license |
 | `GET` | `/api/providers?scenario=active-with-expired-licenses` | Active providers with at least one expired license |
@@ -74,4 +75,34 @@ The directory loads providers from `GET /api/providers`, supports name/county se
 
 ## Further improvements
 
-With more time, I would add EF Core migrations, API and UI automated tests (including persistence tests for soft deletion), authentication and role-based audit access, pagination, and operational logging/health checks.
+With more time, I would add EF Core migrations, broader API and UI automated tests, authentication and role-based audit access, pagination, and operational logging/health checks.
+
+## Read-only provider and license dashboard
+
+Choose **Dashboard** in the navigation, or open `http://localhost:5173/#dashboard`. The existing **Directory** remains available for management; the dashboard has no create, edit, or delete actions. Refresh reloads current backend data. Loading, empty, and request-error states are explicit, with a retry action after failures.
+
+### Why these metrics
+
+- **Summary cards** show the total providers, total licenses, expired licenses, and distinct providers needing renewal, giving a quick registry-wide overview independent of directory filters.
+- **Providers by status** shows the Active/Inactive/Pending lifecycle mix to highlight onboarding and operational workload.
+- **License health** separates Active, Expired, and Suspended licenses. Suspended licenses are not mislabeled as active or expired, so all licenses reconcile to the total.
+- **Licenses per provider** highlights license workload and providers with no licenses. All current providers appear, ordered by license count descending; long charts scroll rather than silently dropping providers.
+- **Providers with expiring licenses** identifies actionable renewal risks, showing each provider's count and nearest expiration date, ordered by earliest expiration.
+
+### Frontend/backend integration and business rules
+
+React requests `GET /api/dashboard` through the shared API helper and existing Vite `/api` proxy. A dedicated C# controller calls `IDashboardService`, registered with dependency injection. The service reads SQLite through EF Core with `AsNoTracking` and the existing soft-delete query filters, excluding deleted providers and deleted licenses. It returns a dedicated response DTO containing counts, status distributions, per-provider license totals, renewal candidates, the UTC evaluation date, and the renewal window length. The dashboard uses lightweight CSS bar charts with visible labels and numeric counts, avoiding another chart dependency. React only renders API metrics and scales the bars; it does not decide validity, filter renewal candidates, or aggregate business counts.
+
+The backend captures one UTC date per request using `TimeProvider` and reuses `ProviderResponseMapper.GetEffectiveLicenseStatus`. A license expiring today remains active; expiration dates before today are expired unless the stored status is Suspended. The renewal window includes today through 30 days ahead, inclusive, and includes only effectively Active licenses. Provider lifecycle status is independent: even Inactive/Pending providers can have licenses needing renewal. Cards count distinct affected providers, while the renewal table also shows their affected license counts. Date-only fields are returned as `YYYY-MM-DD` and displayed without browser timezone conversion.
+
+No database schema changes or new sample records are required. The endpoint reads existing persisted data; the dashboard reloads when opened or refreshed. As with the directory, production hosting should route `/api` to the C# backend through a same-origin reverse proxy.
+
+### Validation
+
+Run the focused SQLite-backed tests from the repository root:
+
+```powershell
+dotnet test backend\Candidate.API.Tests\Candidate.API.Tests.csproj
+```
+
+These cover today/30-day/31-day expiration boundaries, suspended licenses, independent provider statuses, zero-license providers, soft-deleted licenses/providers, no tracking, and an empty registry. Build React with `npm run build` from `frontend\React.UI`. [Dashboard.http](backend/Candidate.API/Dashboard.http) provides a manual API request; the endpoint is also listed in development Swagger.
